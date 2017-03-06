@@ -14,7 +14,7 @@ var http = require('http');
 app.use(bodyParser.urlencoded({extended:true}));
 app.use(bodyParser.json());
 app.use('/api', router);
-var vkCrawler = "http://www.vkdownload.net/musique/"
+var vkCrawler = "http://www.vkdownload.net/vk.php?query="
 
 //Middleware
 router.use(function(req,res,next){
@@ -60,7 +60,7 @@ var decodeSecret = function(secret){
     var t = secret.split('#'),
         n = decode(t[1]),
         t = decode(t[0]);
-
+    
     n = n.split(String.fromCharCode(9));
     for (var a, r, s = n.length; s--; null ) {
         r = n[s].split(String.fromCharCode(11))
@@ -79,12 +79,16 @@ var getProxy = function(url){
         'download' : 'http://www.vkdownload.net/download/'+url[1]+'/'+url[3]+'.mp3'
     }
 };
+function jsonFile(url) {
+}
 
 //Routers
 router.post('/vk',function(req,response){
     var songName = req.body.song
+    var responseArray = [];
     var encode = encodeURI(songName);
     var crawlThisSite = vkCrawler + encode;
+    var parsedResults = [];
     request(crawlThisSite, function(err,res,body){
         if (err) {
             console.log("err" + err); res.json({success:false, message:err});
@@ -126,36 +130,36 @@ router.post('/vk',function(req,response){
                     request.end();
                 })((error, statusCode, headers, body) => {
                     var $ = cheerio.load(body);
-                    response.send(body);
+                    var shouldStop = false
                     var res = $('td.controleTable').each(function(i,element){
                         var simple = $(this).parent().parent().html();
                         var $2 = cheerio.load(simple);
-                        var resTwo = $2('tr').each(function(i,element){
-                            var q = $2(this).attr('data-key');
+                        var resTwo = $2('tr').each(function(iTwo,elementTwo){
+                            if (iTwo === $2('tr').length-1) {
+                                shouldStop = true
+                            }
+                            if (shouldStop) return;
+                            var q = $2(elementTwo).attr('data-key');
                             var dic = decodeSecret(q);
-                            var download = dic.download;
+                            var dl = dic.download;
                             var stream = dic.stream;
-                            var jsonDic = stream.replace('.mp3','.json');
-                            console.log(jsonDic);
-                            var url = jsonDic;
-                            request(url,function(err,res,body){
-                                if (res.statusCode === 200) {
-                                    console.log(body);
-                                }
+                            var too = stream.replace('mp3','json');
+                            request(too,function(err,res,body){
+                                var json = JSON.parse(body);
+                                var metadata = {
+                                    download:dl,
+                                    info:{
+                                        title:json.title,
+                                        artist:json.artist
+                                    }
+                                };
+                                parsedResults.push(metadata);
                             });
-                            var simple = {title:'test',artist:'test2'};
-                            simple['url'] = dic.download;
-                            console.log(simple);
-                            console.log(dic.download);
-                            console.log('       ');
-                            console.log(q);
-                        });
-                        getJSON(url).then(function(data) {
-                            console.log('Your Json result is:  ' + data.title);
-                        }, function(status) {
-                        console.log('ridi')
                         });
                     });
+                    setTimeout(function(){
+                        response.json(parsedResults);
+                    }, 3000); 
                 });
             }
         }
