@@ -97,9 +97,9 @@ router.post('/vk',function(req,response){
                     const httpOptions = {
                         hostname: 'www.vkdownload.net',
                         port: '80',
-                        path: '/vk.php?query=justin%20bieber',
+                        path: '/vk.php?query=' + encode,
                         method: 'POST',
-                        headers: {"Cookie":"__cfduid=d6311a20501e7957b6573563fdc1595f51488760625; PHPSESSID=a15fb974f379702c209720f14b3b8e30","Content-Type":"application/x-www-form-urlencoded; charset=utf-8"}
+                        headers: {"Content-Type":"application/x-www-form-urlencoded; charset=utf-8"}
                     };
                     httpOptions.headers['User-Agent'] = 'node ' + process.version;
                     const request = httpTransport.request(httpOptions, (res) => {
@@ -136,8 +136,16 @@ router.post('/vk',function(req,response){
                             var download = dic.download;
                             var stream = dic.stream;
                             var jsonDic = stream.replace('.mp3','.json');
+                            console.log(jsonDic);
                             var url = jsonDic;
-                            console.log('       ');
+                            request(url,function(err,res,body){
+                                if (res.statusCode === 200) {
+                                    console.log(body);
+                                }
+                            });
+                            var simple = {title:'test',artist:'test2'};
+                            simple['url'] = dic.download;
+                            console.log(simple);
                             console.log(dic.download);
                             console.log('       ');
                             console.log(q);
