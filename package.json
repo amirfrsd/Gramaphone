@@ -1,0 +1,19 @@
+{
+  "name": "gramaphone",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "dependencies": {
+    "body-parser": "^1.17.0",
+    "cheerio": "*",
+    "express": "*",
+    "mongoose": "*",
+    "request": "*",
+    "url-parse": "*"
+  },
+  "author": "",
+  "license": "ISC"
+}
